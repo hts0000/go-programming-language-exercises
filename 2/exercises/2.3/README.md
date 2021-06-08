@@ -1,0 +1,1 @@
+cmdline run ```go test -bench .``` to start benchmak test
