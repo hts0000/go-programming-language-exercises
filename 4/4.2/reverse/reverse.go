@@ -12,7 +12,9 @@ func main() {
 	fmt.Println(s)
 
 	s = []int{0, 1, 2, 3, 4, 5}
+	fmt.Printf("%p\n", s)
 	reverseNum(s, 3)
+	fmt.Printf("%p\n", s)
 	fmt.Println(s)
 }
 
