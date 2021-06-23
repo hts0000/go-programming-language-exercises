@@ -1,29 +1,13 @@
 package github
 
-type Repo struct {
-	RepoUrl string
-	Token   string
-	Issues
-}
-
-type Issues struct {
-	Title   string
-	Context string
-	Labels  string
-}
-
-func (is *Issues) Add() {
+func (is *Issue) Add() {
 
 }
 
-func (is *Issues) Remove() {
+func (is *Issue) Remove() {
 
 }
 
-func (is *Issues) Update() {
-
-}
-
-func (is *Issues) Search() {
+func (is *Issue) Update() {
 
 }

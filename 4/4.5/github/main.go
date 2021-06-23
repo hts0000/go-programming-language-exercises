@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"issues/github"
+	"issues-1/github"
 	"log"
 	"os"
 	"time"
