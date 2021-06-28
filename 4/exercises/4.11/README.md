@@ -22,3 +22,9 @@ $ curl -H "Authorization: token OAUTH-TOKEN" https://api.github.com
 
 ### ISSUES相关操作
 https://docs.github.com/cn/rest/reference/issues
+
+### github API
+未经身份验证的客户端每小时可以发出 60 个请求。 要每小时发出更多请求，我们需要进行身份验证。 事实上，使用 GitHub API 做任何有意义的事情需要身份验证。
+
+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
+Authorization: token OAUTH-TOKEN

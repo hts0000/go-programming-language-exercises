@@ -1,22 +1,27 @@
 package main
 
-// 如何增删改查issues:https://segmentfault.com/a/1190000015144126
-
 import (
 	"fmt"
-	"github-issues-cli/github"
+	"go-issues-cli/github"
 	"log"
 )
 
-const IssuesUrl = "https://api.github.com/search/issues"
-
 func main() {
-	userName, repoName := "hts0000", "go-programming-language"
-	repo, err := github.SearchIssues(userName, repoName)
+	repoName := "hts0000/go-programming-language"
+	token := "token " + "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"
+
+	repo, err := github.NewRepoer(repoName, token)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// 查
 	for _, issue := range repo.Issues {
-		fmt.Println(issue.CreatedAt, issue.Number, issue.Body)
+		fmt.Printf("#%-5d %v %9.9s %.55s\n", issue.Number, issue.CreatedAt, issue.User.UserName, issue.Title)
 	}
+
+	// 增
+	// repo.CreateIssue("cli-test-2", "# cli-test-2")
+
+	// 删
 }

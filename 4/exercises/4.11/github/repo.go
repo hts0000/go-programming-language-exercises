@@ -3,52 +3,96 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
-const URL = "https://api.github.com/repos"
+const URL = "https://api.github.com/repos/"
 
-type IssuesSearchResult struct {
-	TotalCount int `json:"total_count"`
-	Issues     []*Issue
+type Repo struct {
+	RepoName string
+	HTMLURL  string `json:"html_url"`
+	Issues   []*Issue
+	Token    string
 }
 
 type Issue struct {
-	Number    int
-	HTMLURL   string `json:"html_url"`
-	Title     string
-	State     string
-	User      *User
+	HTMLURL   string    `json:"html_url"`
+	Title     string    `json:"title"`
+	Number    uint64    `json:"number"`
+	Context   string    `json:"body"` // markdown format
 	CreatedAt time.Time `json:"created_at"`
-	Body      string    // in Markdown format
+	User      *User     `json:"user"`
+	State     string    `json:"state"`
 }
 
 type User struct {
-	Login   string
-	HTMLURL string `json:"html_url"`
+	UserName  string `json:"login"`
+	UserRepos string `json:"html_url"`
 }
 
-func SearchIssues(userName, repoName string) (*IssuesSearchResult, error) {
-	issueURL := URL + "/" + userName + "/" + repoName + "/issues"
-	fmt.Println(issueURL)
-	resp, err := http.Get(issueURL)
+func NewRepoer(repoName, token string) (*Repo, error) {
+	repoURL := URL + repoName
+	issuesURL := repoURL + "/issues?state=all"
+	resp, err := http.Get(repoURL)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// We must close resp.Body on all execution paths.
-	// (Chapter 5 presents 'defer', which makes this simpler.)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("search query failed: %s", resp.Status)
+		return nil,
+			fmt.Errorf("require [%s] failed, http status code: [%v]",
+				repoURL, resp.StatusCode)
 	}
-
-	var result IssuesSearchResult
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		resp.Body.Close()
+	var repo = Repo{
+		RepoName: repoName,
+		Token:    token,
+	}
+	err = json.NewDecoder(resp.Body).Decode(&repo)
+	if err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
-	return &result, nil
+
+	resp, err = http.Get(issuesURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil,
+			fmt.Errorf("require [%s] failed, http status code: [%v]",
+				issuesURL, resp.StatusCode)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&repo.Issues)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &repo, nil
+}
+
+func (repo *Repo) CreateIssue(title, context string) error {
+	client := &http.Client{}
+	data := fmt.Sprintf(`{"title":"%s","body":"%s"}`, title, context)
+	req, err := http.NewRequest("POST", URL+repo.RepoName+"/issues", strings.NewReader(data))
+	if err != nil {
+		return err
+	}
+	// req.Header.Add("Authorization", "token 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")
+	req.Header.Add("Authorization", repo.Token)
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (repo *Repo) DeleteIssue(id uint64) error {
+
+	return nil
 }
