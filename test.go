@@ -1,22 +1,34 @@
 package main
 
+// export EDITOR='program' 设置命令行默认编辑器
+// export VISUAL='program' 设置GUI默认编辑器
+
 import (
+	"encoding/json"
+	"fmt"
 	"log"
-	"net/http"
 )
 
+type Issue struct {
+	Title   string `json:"title"`
+	Number  uint64 `json:"number"`
+	State   string `json:"state"`
+	Context string `json:"body"` // markdown format
+}
+
 func main() {
-	client := &http.Client{}
-	// data := `{"number":1}`
-	req, err := http.NewRequest("DELETE", "https://api.github.com/repos/hts0000/go-programming-language/issues/10", nil)
+	var issue = Issue{
+		Title:   "fuck world",
+		Number:  1,
+		State:   "closed",
+		Context: "",
+	}
+
+	fmt.Println(issue)
+	data := make([]byte, 0, 10)
+	data, err := json.Marshal(issue)
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Add("Authorization", "token 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")
-	req.Header.Add("Accept", "application/vnd.github.v3+json")
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	resp.Body.Close()
+	fmt.Println(string(data))
 }
