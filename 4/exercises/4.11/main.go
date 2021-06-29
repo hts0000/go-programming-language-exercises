@@ -11,19 +11,23 @@ import (
 	"flag"
 	"fmt"
 	"go-issues-cli/github"
+	"io/ioutil"
 	"log"
 	"os"
-	"runtime"
+	"os/exec"
 )
 
 func main() {
 	var (
-		repoName string
-		token    string
+		repoName   string
+		token      string
+		action     string
+		editorFlag bool
 	)
 	flag.StringVar(&repoName, "repo", "", "set repo name, example: hts0000/go-programming-language")
 	flag.StringVar(&token, "token", "", "set token value, example: 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")
-
+	flag.StringVar(&action, "a", "search", "set action, support: search, searchall, update, create")
+	flag.BoolVar(&editorFlag, "e", false, "whether to use a text editor")
 	flag.Parse()
 
 	if repoName == "" || token == "" {
@@ -32,52 +36,118 @@ func main() {
 	}
 
 	token = "token " + token
-
 	repo, err := github.NewRepoer(repoName, token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 查
-	for _, issue := range repo.Issues {
-		fmt.Printf("#%-5d %v %9.9s %.55s\n", issue.Number, issue.CreatedAt, issue.User.UserName, issue.Title)
-	}
+	var (
+		number  uint64
+		state   string
+		title   string
+		content string
+		issue   github.Issue
+	)
 
-	var issue = github.Issue{}
-	// 增
-	// 将新增的内容存入一个结构体
-	issue = github.Issue{
-		State:   "open",
-		Title:   "hello github-issues-cli - test1",
-		Context: "",
-	}
-	err = repo.CreateIssue(issue)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// 改
-	// 将修改的内容存入一个结构体
-	issue = github.Issue{
-		Number:  11,
-		State:   "open",
-		Title:   "hello github-issues-cli - test2",
-		Context: "",
-	}
-	err = repo.UpdateIssue(issue)
-	if err != nil {
-		log.Fatal(err)
+	switch action {
+	case "search":
+		fmt.Print("Please input issue number: ")
+		fmt.Scanln(&number)
+		for _, issue := range repo.Issues {
+			if issue.Number == number {
+				fmt.Printf("#%-5d %v %9.9s %.55s\n", issue.Number, issue.CreatedAt, issue.User.UserName, issue.Title)
+				break
+			}
+		}
+	case "searchall":
+		for _, issue := range repo.Issues {
+			fmt.Printf("#%-5d %v %9.9s %.55s\n", issue.Number, issue.CreatedAt, issue.User.UserName, issue.Title)
+		}
+	case "update":
+		if editorFlag {
+			fmt.Print("Please input issue number, State, Title: ")
+			fmt.Scanln(&number, &state, &title)
+			fmt.Print("\nRetrieve the content will use editor\n")
+			content, err = editor()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			fmt.Print("Please input issue number, State, Title, Context: ")
+			fmt.Scanln(&number, &state, &title, &content)
+		}
+		issue = github.Issue{
+			Number:  number,
+			State:   state,
+			Title:   title,
+			Content: content,
+		}
+		err = repo.UpdateIssue(issue)
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "create":
+		if editorFlag {
+			fmt.Print("Please input issue State, Title: ")
+			fmt.Scanln(&state, &title)
+			fmt.Print("\nRetrieve the content will use editor\n")
+			content, err = editor()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			fmt.Print("Please input issue State, Title, Context: ")
+			fmt.Scanln(&state, &title, &content)
+		}
+		issue = github.Issue{
+			State:   state,
+			Title:   title,
+			Content: content,
+		}
+		err = repo.CreateIssue(issue)
+		if err != nil {
+			log.Fatal(err)
+		}
+	default:
+		flag.Usage()
+		os.Exit(1)
 	}
 }
 
-func editor(filePath string) error {
-	fp, err := os.CreateTemp("", filePath)
+// 无法正常工作
+// 打开编辑器后，无法正常写入，提示：另一个程序使用该文件，进程无法访问
+func editor() (content string, err error) {
+	// fmt.Print("Please input editor path: ")
+	// var editorPath string
+	// fmt.Scanln(&editorPath)
+	editorPath := `D:\Program Files\Sublime Text 3\sublime_text.exe`
+	fp, err := os.CreateTemp("", "tmp*.txt")
 	if err != nil {
-		return err
+		return "", err
 	}
-	var editor = ""
-	switch runtime.GOOS {
-	case "linux":
-		editor = "vim"
+	defer fp.Close()
+	defer func() {
+		if os.Remove(fp.Name()).Error() != "" {
+			content = ""
+			err = fmt.Errorf("cant not remove tmp file %s, err: %v", fp.Name(), os.Remove(fp.Name()).Error())
+		}
+	}()
+
+	cmd := &exec.Cmd{
+		Path:   editorPath,
+		Args:   []string{editorPath, fp.Name()},
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
 	}
+	fmt.Println(cmd.Args)
+
+	fmt.Printf("Start editor %s...\n", editorPath)
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	s, err := ioutil.ReadFile(fp.Name())
+	content = string(s)
+	return
 }

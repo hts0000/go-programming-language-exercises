@@ -4,31 +4,40 @@ package main
 // export VISUAL='program' 设置GUI默认编辑器
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 )
 
-type Issue struct {
-	Title   string `json:"title"`
-	Number  uint64 `json:"number"`
-	State   string `json:"state"`
-	Context string `json:"body"` // markdown format
-}
-
 func main() {
-	var issue = Issue{
-		Title:   "fuck world",
-		Number:  1,
-		State:   "closed",
-		Context: "",
-	}
+	fileName := "test*.txt"
 
-	fmt.Println(issue)
-	data := make([]byte, 0, 10)
-	data, err := json.Marshal(issue)
+	fp, err := os.CreateTemp("", fileName)
+	fmt.Println(fp.Name())
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(data))
+	defer fp.Close()
+	defer func() {
+		if os.Remove(fp.Name()).Error() != "" {
+			log.Printf("cant not remove tmp file %s, err: %v", fp.Name(), os.Remove(fp.Name()).Error())
+		}
+	}()
+	editorPath := `D:\Program Files\Sublime Text 3\sublime_text.exe`
+	editor := `sublime_text.exe`
+	cmd := &exec.Cmd{
+		Path:   editorPath,
+		Args:   []string{editor, fp.Name()},
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+	// cmd := exec.Command(editorPath, fp.Name())
+	fmt.Println(cmd.Args)
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println()
 }

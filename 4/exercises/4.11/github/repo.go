@@ -21,7 +21,7 @@ type Issue struct {
 	HTMLURL   string    `json:"html_url"`
 	Title     string    `json:"title"`
 	Number    uint64    `json:"number"`
-	Context   string    `json:"body"` // markdown format
+	Content   string    `json:"body"` // markdown format
 	CreatedAt time.Time `json:"created_at"`
 	User      *User     `json:"user"`
 	State     string    `json:"state"`
@@ -36,6 +36,7 @@ func NewRepoer(repoName, token string) (*Repo, error) {
 	repoURL := URL + repoName
 	resp, err := getUrl(repoURL)
 	if err != nil {
+		fmt.Println("###############################")
 		return nil, err
 	}
 
@@ -50,6 +51,7 @@ func NewRepoer(repoName, token string) (*Repo, error) {
 
 	issuesURL := repoURL + "/issues?state=all"
 	resp, err = getUrl(issuesURL)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +76,6 @@ func getUrl(url string) (resp *http.Response, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil,
@@ -89,6 +90,8 @@ func httpRequire(method, url, token string, data Issue) error {
 	if err != nil {
 		return fmt.Errorf("create: conv struct failed, error: %v", err)
 	}
+
+	fmt.Println(string(jsonStr))
 
 	req, err := http.NewRequest(method, url, strings.NewReader(string(jsonStr)))
 	if err != nil {
@@ -109,7 +112,7 @@ func httpRequire(method, url, token string, data Issue) error {
 		}
 	} else {
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("request failed, http state code: %v, method = [%s]", resp.StatusCode, method)
+			return fmt.Errorf("request [%s] failed, http state code: %v, method = [%s]", url, resp.StatusCode, method)
 		}
 	}
 
