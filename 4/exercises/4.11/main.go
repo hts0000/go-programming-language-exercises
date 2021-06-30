@@ -8,6 +8,7 @@ package main
 // https://github.com/Julineo/golang1training/blob/master/4/4.11/borrowed/main.go
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"go-issues-cli/github"
@@ -15,7 +16,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 )
+
+// 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
 
 func main() {
 	var (
@@ -114,33 +119,38 @@ func main() {
 	}
 }
 
-// 无法正常工作
+// windows下无法正常工作
 // 打开编辑器后，无法正常写入，提示：另一个程序使用该文件，进程无法访问
 func editor() (content string, err error) {
-	// fmt.Print("Please input editor path: ")
-	// var editorPath string
-	// fmt.Scanln(&editorPath)
-	editorPath := `D:\Program Files\Sublime Text 3\sublime_text.exe`
 	fp, err := os.CreateTemp("", "tmp*.txt")
 	if err != nil {
 		return "", err
 	}
 	defer fp.Close()
-	defer func() {
-		if os.Remove(fp.Name()).Error() != "" {
-			content = ""
-			err = fmt.Errorf("cant not remove tmp file %s, err: %v", fp.Name(), os.Remove(fp.Name()).Error())
-		}
-	}()
+	defer os.Remove(fp.Name())
+
+	fmt.Print("Please input editor path: ")
+	scanner := bufio.NewScanner(os.Stdin) // 绝对路径
+	scanner.Scan()
+	editorPath := scanner.Text()
+
+	var args []string
+	switch runtime.GOOS {
+	case "linux":
+		args = []string{filepath.Base(editorPath), fp.Name()}
+	case "windows":
+		args = []string{"/C", editorPath, fp.Name()}
+		editorPath = "cmd"
+	}
 
 	cmd := &exec.Cmd{
 		Path:   editorPath,
-		Args:   []string{editorPath, fp.Name()},
+		Args:   args,
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	}
-	fmt.Println(cmd.Args)
+	// fmt.Println(cmd.Args)
 
 	fmt.Printf("Start editor %s...\n", editorPath)
 	err = cmd.Run()
