@@ -7,6 +7,8 @@ package main
 
 // https://github.com/Julineo/golang1training/blob/master/4/4.11/borrowed/main.go
 
+// example: go-issues-cli -repo "hts0000/go-programming-language" -token "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" -a closeall
+
 import (
 	"bufio"
 	"flag"
@@ -31,7 +33,7 @@ func main() {
 	)
 	flag.StringVar(&repoName, "repo", "", "set repo name, example: hts0000/go-programming-language")
 	flag.StringVar(&token, "token", "", "set token value, example: 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")
-	flag.StringVar(&action, "a", "search", "set action, support: search, searchall, update, create")
+	flag.StringVar(&action, "a", "search", "set action, support: search, searchall, update, create, closeall")
 	flag.BoolVar(&editorFlag, "e", false, "whether to use a text editor")
 	flag.Parse()
 
@@ -113,6 +115,14 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "closeall":
+		for _, issue := range repo.Issues {
+			issue.State = "closed"
+			err = repo.UpdateIssue(*issue)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	default:
 		flag.Usage()
 		os.Exit(1)
@@ -139,6 +149,7 @@ func editor() (content string, err error) {
 	case "linux":
 		args = []string{filepath.Base(editorPath), fp.Name()}
 	case "windows":
+		// cmd /C：使用cmd允许命令，/C表示运行命令结束后，关闭cmd窗口；还有/K，意思为保留cmd窗口
 		args = []string{"/C", editorPath, fp.Name()}
 		editorPath = "cmd"
 	}
