@@ -1,14 +1,9 @@
 package main
 
+import "fmt"
+
 // export EDITOR='program' 设置命令行默认编辑器
 // export VISUAL='program' 设置GUI默认编辑器
-
-import (
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-)
 
 func main() {
 	// fileName := "test*.txt"
@@ -41,14 +36,26 @@ func main() {
 	// }
 	// fmt.Println()
 
-	cmd := &exec.Cmd{
-		Path:   "/usr/bin/vim",
-		Args:   []string{filepath.Base("/usr/bin/vim"), "/tmp/test.txt"},
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
-	fmt.Println(cmd.Args)
-	cmd.Run()
+	// cmd := &exec.Cmd{
+	// 	Path:   "/usr/bin/vim",
+	// 	Args:   []string{filepath.Base("/usr/bin/vim"), "/tmp/test.txt"},
+	// 	Stdin:  os.Stdin,
+	// 	Stdout: os.Stdout,
+	// 	Stderr: os.Stderr,
+	// }
+	// fmt.Println(cmd.Args)
+	// cmd.Run()
 	// fmt.Println(cmd.Run().Error())
+
+	// fmt.Println(4398046511618 & (1 << 0))
+	// fmt.Printf("%#b\n", 4398046511618)
+	// fmt.Printf("%#b\n", 4398046511616)
+	x := 4398046511618
+	x = x - ((x >> 1) & 0x5555555555555555)
+	x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333)
+	x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f
+	x = x + (x >> 8)
+	x = x + (x >> 16)
+	x = x + (x >> 32)
+	fmt.Println(int(x & 0x7f))
 }
