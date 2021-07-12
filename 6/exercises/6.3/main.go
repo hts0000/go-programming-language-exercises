@@ -32,6 +32,17 @@ func main() {
 	x.UnionWith(&y)
 	fmt.Println(x.String())           // "{1 9 42 144}"
 	fmt.Println(x.Has(9), x.Has(123)) // "true false"
+
+	x.DifferenceWith(&y)
+	fmt.Println(x.String()) // "{1 144}"
+
+	x.Add(42)
+	x.IntersectWith(&y)
+	fmt.Println(x.String()) // "{42}"
+
+	x.Add(100)
+	x.SymmetricDifference(&y)
+	fmt.Println(x.String()) // "{9 100}"
 }
 
 // Has reports whether the set contains the non-negative value x.
@@ -83,15 +94,32 @@ func (s *IntSet) String() string {
 
 // IntersectWith(交集：元素在A集合B集合均出现)
 func (s *IntSet) IntersectWith(t *IntSet) {
-
+	for i, tword := range t.words {
+		if i < len(s.words) {
+			s.words[i] &= tword
+		}
+	}
+	s.words = s.words[:len(t.words)]
 }
 
 // DifferenceWith(差集：元素出现在A集合，未出现在B集合)
 func (s *IntSet) DifferenceWith(t *IntSet) {
-
+	for i, tword := range t.words {
+		// ^: 异或运算，值不同则为1，相同为0
+		// B           A
+		// 100011010 ^ 110101001 = 010110011
+		// 010110011 & 110101001 = 010100001 // 正好是A中有而B中没有的
+		if i < len(s.words) {
+			s.words[i] &= s.words[i] ^ tword
+		}
+	}
 }
 
 // SymmetricDifference(并差集：元素出现在A但没有出现在B，或者出现在B没有出现在A)
 func (s *IntSet) SymmetricDifference(t *IntSet) {
-
+	for i, tword := range t.words {
+		if i < len(s.words) {
+			s.words[i] ^= tword
+		}
+	}
 }
