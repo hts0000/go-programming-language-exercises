@@ -58,4 +58,8 @@ func main() {
 	x = x + (x >> 16)
 	x = x + (x >> 32)
 	fmt.Println(int(x & 0x7f))
+
+	n := -100.111
+	fmt.Println(+100.111)
+	fmt.Println(1 + n)
 }
