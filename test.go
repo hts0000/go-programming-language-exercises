@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // export EDITOR='program' 设置命令行默认编辑器
 // export VISUAL='program' 设置GUI默认编辑器
@@ -62,4 +65,6 @@ func main() {
 	n := -100.111
 	fmt.Println(+100.111)
 	fmt.Println(1 + n)
+	t2, _ := time.ParseDuration("-1h")
+	fmt.Println(time.Now().Add(t2))
 }
