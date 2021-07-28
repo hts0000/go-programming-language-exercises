@@ -1,5 +1,7 @@
 # Exercises
 
+https://github.com/ray-g/gopl
+
 ## 练习 1.1 Exercise 1.1 (P8)
 Modify the echo program to also print os.Args[0], the name of the command that invoked it.
 

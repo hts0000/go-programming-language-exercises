@@ -18,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%d issues:\n", result.TotalCount)
+	fmt.Print("%d issues:\n", result.TotalCount)
 	// 返回6个月以内的issues
 	classify(result, 6)
 
