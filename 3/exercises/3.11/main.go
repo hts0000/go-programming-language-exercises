@@ -9,7 +9,7 @@ import (
 
 // 练习 3.11
 // 完善comma函数，以支持浮点数处理和一个可选的正负号的处理
-// go run .\main.go -n -1234556.1111 -N
+// go run .\links.go -n -1234556.1111 -N
 
 var isnegative bool
 
