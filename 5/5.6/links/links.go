@@ -2,8 +2,9 @@ package links
 
 import (
 	"fmt"
-	"golang.org/x/net/html"
 	"net/http"
+
+	"golang.org/x/net/html"
 )
 
 func Extract(url string) ([]string, error) {
@@ -34,9 +35,9 @@ func Extract(url string) ([]string, error) {
 				links = append(links, link.String())
 			}
 		}
-		forEachNode(doc, visitNode, nil)
-		return links, nil
 	}
+	forEachNode(doc, visitNode, nil)
+	return links, nil
 }
 
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {

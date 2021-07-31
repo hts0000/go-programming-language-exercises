@@ -1,8 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
 	"time"
+
+	"golang.org/x/net/html"
 )
 
 // export EDITOR='program' 设置命令行默认编辑器
@@ -67,4 +75,37 @@ func main() {
 	fmt.Println(1 + n)
 	t2, _ := time.ParseDuration("-1h")
 	fmt.Println(time.Now().Add(t2))
+
+	tempdir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(tempdir)
+	defer func() {
+		if err := os.RemoveAll(tempdir); err != nil {
+			log.Print(err)
+		}
+	}()
+
+	resp, err := http.Get("http://shouce.jb51.net/gopl-zh/ch8/ch8-06.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	b := &bytes.Buffer{}
+	err = html.Render(b, doc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	file, err := os.Create("./index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = io.Copy(file, b)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
