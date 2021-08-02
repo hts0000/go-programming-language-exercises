@@ -105,18 +105,25 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	links := crawlDepth("http://shouce.jb51.net/gopl-zh/ch8/ch8-06.html", 3)
+	nodes := crawlDepth("http://shouce.jb51.net/gopl-zh/ch8/ch8-06.html", 3)
 
 	base, err := url.Parse("http://shouce.jb51.net/gopl-zh/ch8/ch8-06.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(base.String(), base.Host, base.Path)
+	fmt.Printf("String = %v, Host = %v, Path = %v\n", base.String(), base.Host, base.Path)
 
-	for _, url := range linkURLs(links, base) {
+	for _, url := range linkURLs(nodes, base) {
 		fmt.Println(url)
 	}
+
+	// rewriteLocalLinks(nodes, base)
+
+	// for _, url := range linkURLs(nodes, base) {
+	// 	fmt.Println(url)
+	// }
+
 }
 
 // 练习 8.7
@@ -132,47 +139,42 @@ func main() {
 // 		1.3 从b中取出baseurl，重写为本地可以访问的url
 //
 
-var urlChan = make(chan string)
-var nodeChan = make(chan *html.Node)
-
 func crawlDepth(baseurl string, depth uint8) []*html.Node {
 	resp, err := http.Get(baseurl)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer resp.Body.Close()
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	links := linkNodes(doc)
-
-	for _, link := range links {
+	nodes := linkNodes(doc)
+	for _, link := range nodes {
 		fmt.Printf("Attr = %#v, DataAtom = %v, Type = %v\n", link.Attr, link.DataAtom, link.Type)
 	}
 
-	return links
+	return nodes
 }
 
 func linkNodes(doc *html.Node) []*html.Node {
-	var links []*html.Node
-	// 构建了一个闭包
+	var nodes []*html.Node
 	visitNode := func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "a" {
-			links = append(links, n)
+			nodes = append(nodes, n)
 		}
 	}
 	forEachNode(doc, visitNode, nil)
-	return links
+	return nodes
 }
 
-// 从html解析树的头节点n开始，遍历这颗树获取所有节点，存放到links []*html.Node
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	if pre != nil {
 		pre(n)
 	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
+	for c := n.FirstChild; c != nil; c = n.NextSibling {
 		forEachNode(c, pre, post)
 	}
 	if post != nil {
@@ -180,21 +182,18 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	}
 }
 
-func linkURLs(linkNodes []*html.Node, base *url.URL) []string {
+func linkURLs(nodes []*html.Node, base *url.URL) []string {
 	var urls []string
-	for _, n := range linkNodes {
-		for _, a := range n.Attr {
-			if a.Key != "href" {
+	for _, node := range nodes {
+		for _, n := range node.Attr {
+			if n.Key != "href" {
 				continue
 			}
-			link, err := base.Parse(a.Val)
-			// ignore bad and non-local URLs
+			link, err := base.Parse(n.Val)
 			if err != nil {
-				log.Printf("skipping %q: %s", a.Val, err)
 				continue
 			}
 			if link.Host != base.Host {
-				//log.Printf("skipping %q: non-local host", a.Val)
 				continue
 			}
 			urls = append(urls, link.String())
@@ -202,3 +201,98 @@ func linkURLs(linkNodes []*html.Node, base *url.URL) []string {
 	}
 	return urls
 }
+
+/*******************************************************/
+// var urlChan = make(chan string)
+// var nodeChan = make(chan *html.Node)
+
+// func crawlDepth(baseurl string, depth uint8) []*html.Node {
+// 	resp, err := http.Get(baseurl)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	doc, err := html.Parse(resp.Body)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	links := linkNodes(doc)
+
+// 	for _, link := range links {
+// 		fmt.Printf("Attr = %#v, DataAtom = %v, Type = %v\n", link.Attr, link.DataAtom, link.Type)
+// 	}
+
+// 	return links
+// }
+
+// func linkNodes(doc *html.Node) []*html.Node {
+// 	var links []*html.Node
+// 	// 构建了一个闭包
+// 	visitNode := func(n *html.Node) {
+// 		if n.Type == html.ElementNode && n.Data == "a" {
+// 			links = append(links, n)
+// 		}
+// 	}
+// 	forEachNode(doc, visitNode, nil)
+// 	return links
+// }
+
+// // 从html解析树的头节点n开始，遍历这颗树获取所有节点，存放到links []*html.Node
+// func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
+// 	if pre != nil {
+// 		pre(n)
+// 	}
+// 	for c := n.FirstChild; c != nil; c = c.NextSibling {
+// 		forEachNode(c, pre, post)
+// 	}
+// 	if post != nil {
+// 		post(n)
+// 	}
+// }
+
+// func linkURLs(linkNodes []*html.Node, base *url.URL) []string {
+// 	var urls []string
+// 	for _, n := range linkNodes {
+// 		for _, a := range n.Attr {
+// 			if a.Key != "href" {
+// 				continue
+// 			}
+// 			link, err := base.Parse(a.Val)
+// 			// ignore bad and non-local URLs
+// 			if err != nil {
+// 				log.Printf("skipping %q: %s", a.Val, err)
+// 				continue
+// 			}
+// 			// 过滤非输入url站点的链接，因为目的是镜像url站点，所以只需要url站点的链接即可，也就是要求中说的“外链的应该就不算了”
+// 			if link.Host != base.Host {
+// 				//log.Printf("skipping %q: non-local host", a.Val)
+// 				continue
+// 			}
+// 			urls = append(urls, link.String())
+// 		}
+// 	}
+// 	return urls
+// }
+
+// // rewriteLocalLinks rewrites local links to be relative and links without
+// // extensions to point to index.html, eg /hi/there -> /hi/there/index.html.
+// func rewriteLocalLinks(linkNodes []*html.Node, base *url.URL) {
+// 	for _, n := range linkNodes {
+// 		for i, a := range n.Attr {
+// 			if a.Key != "href" {
+// 				continue
+// 			}
+// 			link, err := base.Parse(a.Val)
+// 			if err != nil || link.Host != base.Host {
+// 				continue // ignore bad and non-local URLs
+// 			}
+// 			// Clear fields so the url is formatted as /PATH?QUERY#FRAGMENT
+// 			link.Scheme = ""
+// 			link.Host = ""
+// 			link.User = nil
+// 			a.Val = link.String()
+// 			n.Attr[i] = a
+// 		}
+// 	}
+// }

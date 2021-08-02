@@ -172,6 +172,7 @@ func visit(rawurl string) (urls []string, err error) {
 		// 获取所有html.Node节点
 		nodes := linkNodes(doc)
 		urls = linkURLs(nodes, u) // Extract links before they're rewritten.
+		// 因为nodes类型是[]*html.Node，里面都是指针，所以修改完之后，所有node的链接已经改为本地了
 		rewriteLocalLinks(nodes, u)
 		b := &bytes.Buffer{}
 		err = html.Render(b, doc)
