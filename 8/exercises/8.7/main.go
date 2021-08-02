@@ -24,6 +24,26 @@ var seen = make(map[string]bool)
 var seenLock = sync.Mutex{}
 var base *url.URL
 
+func main() {
+	flag.IntVar(&maxDepth, "d", 3, "max crawl depth")
+	flag.Parse()
+	wg := &sync.WaitGroup{}
+	if len(flag.Args()) == 0 {
+		fmt.Fprintln(os.Stderr, "usage: mirror URL ...")
+		os.Exit(1)
+	}
+	u, err := url.Parse(flag.Arg(0))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid url: %s\n", err)
+	}
+	base = u
+	for _, link := range flag.Args() {
+		wg.Add(1)
+		go crawl(link, 1, wg)
+	}
+	wg.Wait()
+}
+
 func crawl(url string, depth int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -119,6 +139,7 @@ func rewriteLocalLinks(linkNodes []*html.Node, base *url.URL) {
 	}
 }
 
+// 返回传入url能到达的所有url
 func visit(rawurl string) (urls []string, err error) {
 	fmt.Println(rawurl)
 	resp, err := http.Get(rawurl)
@@ -148,6 +169,7 @@ func visit(rawurl string) (urls []string, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("parsing %s as HTML: %v", u, err)
 		}
+		// 获取所有html.Node节点
 		nodes := linkNodes(doc)
 		urls = linkURLs(nodes, u) // Extract links before they're rewritten.
 		rewriteLocalLinks(nodes, u)
@@ -193,24 +215,4 @@ func save(resp *http.Response, body io.Reader) error {
 		log.Print("save: ", err)
 	}
 	return nil
-}
-
-func main() {
-	flag.IntVar(&maxDepth, "d", 3, "max crawl depth")
-	flag.Parse()
-	wg := &sync.WaitGroup{}
-	if len(flag.Args()) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: mirror URL ...")
-		os.Exit(1)
-	}
-	u, err := url.Parse(flag.Arg(0))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "invalid url: %s\n", err)
-	}
-	base = u
-	for _, link := range flag.Args() {
-		wg.Add(1)
-		go crawl(link, 1, wg)
-	}
-	wg.Wait()
 }

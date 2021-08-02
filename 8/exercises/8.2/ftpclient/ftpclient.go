@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -14,23 +15,37 @@ func main() {
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	// 启动一个goroutines，将命令行输入传输给连接
-	go func() {
-		if _, err := io.Copy(conn, os.Stdin); err != nil {
-			log.Print(err)
-		}
-	}()
+
 	// 从连接中读取数据，输出到命令行
-	// if _, err := io.Copy(os.Stdout, conn); err != nil {
-	// 	log.Print(err)
-	// }
+	// go func() {
+	// 	if _, err := io.Copy(os.Stdout, conn); err != nil {
+	// 		log.Print(err)
+	// 	}
+	// }()
+
+	readInput := bufio.NewReader(os.Stdin)
+	readConn := bufio.NewReader(conn)
 	for {
-		res, err := io.ReadAll(conn)
+		fmt.Fprint(os.Stdout, "> ")
+		input, err := readInput.ReadString('\n')
+		if err != nil {
+			log.Print(err)
+			continue  
+		}
+		_, err = io.WriteString(conn, input)
 		if err != nil {
 			log.Print(err)
 			continue
 		}
-		fmt.Println(res)
+		r := make([]byte, 0)
+		_, err = readConn.Read(r)
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		fmt.Fprint(os.Stdout, string(r))
+		// if _, err := io.Copy(os.Stdout, conn); err != nil {
+		// 	log.Print(err)
+		// }
 	}
-
 }
