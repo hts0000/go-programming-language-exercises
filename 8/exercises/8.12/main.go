@@ -27,7 +27,10 @@ func main() {
 	}
 }
 
-type client chan<- string
+type client struct {
+	out chan<- string
+	who string
+}
 
 var (
 	entering = make(chan client)
@@ -41,13 +44,20 @@ func broadcaster() {
 		select {
 		case msg := <-message:
 			for cli := range clients {
-				cli <- msg
+				cli.out <- msg
 			}
 		case cli := <-entering:
 			clients[cli] = true
+			cli.out <- "Currently online:"
+			for c := range clients {
+				// exclude itself
+				if c != cli {
+					cli.out <- c.who
+				}
+			}
 		case cli := <-leaving:
 			delete(clients, cli)
-			close(cli)
+			close(cli.out)
 		}
 	}
 }
@@ -57,16 +67,18 @@ func handleConn(conn net.Conn) {
 	go clientWriter(conn, ch)
 
 	who := conn.RemoteAddr().String()
+	cli := client{ch, who}
+
 	ch <- "You are " + who
 	message <- who + "has arrived"
-	entering <- ch
+	entering <- cli
 
 	input := bufio.NewScanner(conn)
 	for input.Scan() {
 		message <- who + ":" + input.Text()
 	}
 
-	leaving <- ch
+	leaving <- cli
 	message <- who + "has left"
 	conn.Close()
 }
