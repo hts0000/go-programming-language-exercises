@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 )
 
+// go run .\main.go http://www.baidu.com http://www.taobao.com
 func main() {
 	for i := 0; i < 2; i++ {
 		start := time.Now()
@@ -31,7 +33,7 @@ func fetch(url string, ch chan<- string) {
 		ch <- fmt.Sprint(err)
 		return
 	}
-	nbytes, err := io.Copy(os.Stdout, resp.Body)
+	nbytes, err := io.Copy(ioutil.Discard, resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		ch <- fmt.Sprintf("while reading %s: %v", url, err)

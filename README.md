@@ -1,67 +1,77 @@
 # Exercises
 
 # Chapter 1 Tutorial
-## Exercise 1.1 (P8)
+## Exercise 1.1
 Modify the echo program to also print os.Args[0], the name of the command that invoked it.
 
 修改echo程序，使其能够打印os.Args[0]，即被执行命令本身的名字。
-- 完成
+- [x] finish
 
-## Exercise 1.2 (P8)
+## Exercise 1.2
 Modify the echo program to print the index and value of each of its arguments, one per line.
-修改echo程序，使其打印每个参数的索引和值，每个一行。
-- 完成
 
-## Exercise 1.3 (P8)
+修改echo程序，使其打印每个参数的索引和值，每个一行。
+- [x] finish
+
+## Exercise 1.3
 Experiment to measure the difference in running time between our potentially inefficient versions and the one that usesstrings.Join. (Section 1.6 illustrates part of the time package, and Section 11.4 shows how to write benchmark tests for systematic performance evaluation.)
 
 做实验测量潜在低效的版本和使用了strings.Join的版本的运行时间差异。（1.6节讲解了部分time包，11.4节展示了如何写标准测试程序，以得到系统性的性能评测。）
-- 完成
+- [x] finish
 
-## Exercise 1.4 (P8)
-Modifydup2to print the names of all files in which each duplicated line occurs.
+## Exercise 1.4
+Modify dup2to print the names of all files in which each duplicated line occurs.
 
 修改dup2，出现重复的行时打印文件名称。
+- [x] finish
 
-## Exercise 1.5 (P8)
+## Exercise 1.5
 Change the Lissajous program’s color palette to green on black, for added authenticity. To create the web color#RRGGBB, usecolor.RGBA{0xRR, 0xGG, 0xBB, 0xff}, where each pair of hexadecimal digits represents the intensity of the red, green, or blue component of the pixel.
 
 修改前面的Lissajous程序里的调色板，由黑色改为绿色。我们可以用color.RGBA{0xRR, 0xGG, 0xBB, 0xff}来得到#RRGGBB这个色值，三个十六进制的字符串分别代表红、绿、蓝像素。
+- [x] finish
 
-## Exercise 1.6 (P8)
-Modify theLissajousprogram to produce images in multiple colors by adding more values topaletteand then displaying them by changing the third argument ofSetColorIndexin some interesting way.
+## Exercise 1.6
+Modify the Lissajous program to produce images in multiple colors by adding more values to palette and then displaying them by changing the third argument of SetColorIndex in some interesting way.
 
 修改Lissajous程序，修改其调色板来生成更丰富的颜色，然后修改SetColorIndex的第三个参数，看看显示结果吧。
+- [x] finish
 
-## Exercise 1.7 (P8)
-The function callio.Copy(dst,src)reads from src and writes to dst. Use it instead ofioutil.ReadAllto copy the response body toos.Stdoutwithout requiring a buffer large enough to hold the entire stream. Be sure to check the error result ofio.Copy.
+## Exercise 1.7
+The function call io.Copy(dst,src)reads from src and writes to dst. Use it instead of ioutil.ReadAll to copy the response body toos.Stdout without requiring a buffer large enough to hold the entire stream. Be sure to check the error result of io.Copy.
 
 函数调用io.Copy(dst, src)会从src中读取内容，并将读到的结果写入到dst中，使用这个函数替代掉例子中的ioutil.ReadAll来拷贝响应结构体到os.Stdout，避免申请一个缓冲区（例子中的b）来存储。记得处理io.Copy返回结果中的错误。
+- [x] finish
 
-## Exercise 1.8 (P8)
-Modifyfetchto add the prefix http:// to each argument URL if it is missing. You might want to usestrings.HasPrefix.
+## Exercise 1.8
+Modify fetch to add the prefix http:// to each argument URL if it is missing. You might want to use strings.HasPrefix.
 
 修改fetch这个范例，如果输入的url参数没有 http:// 前缀的话，为这个url加上该前缀。你可能会用到strings.HasPrefix这个函数。
+- [x] finish
 
-## Exercise 1.9 (P8)
-Modifyfetchto also print the HTTP status code, found inresp.Status.
+## Exercise 1.9
+Modify fetch to also print the HTTP status code, found in resp.Status.
 
 修改fetch打印出HTTP协议的状态码，可以从resp.Status变量得到该状态码。
+- [x] finish
 
-## Exercise 1.10 (P8)
-Find a web site that produces a large amount of data. Investigate caching by running fetchall twice in succession to see whether the reported time changes much. Do you get the same content each time? Modify fetchall to print its output to a file so it can be examined.
+## Exercise 1.10
+Find a website that produces a large amount of data. Investigate caching by running fetch all twice in succession to see whether the reported time changes much. Do you get the same content each time? Modify fetchall to print its output to a file so it can be examined.
 
 找一个数据量比较大的网站，用本小节中的程序调研网站的缓存策略，对每个URL执行两遍请求，查看两次时间是否有较大的差别，并且每次获取到的响应内容是否一致，修改本节中的程序，将响应结果输出，以便于进行对比。
+- [x] finish
 
-## Exercise 1.11 (P8)
-Try fetchall with longer argument lists, such as samples from the top million web sites available atalexa.com. How does the program behave if a web site just doesn’t respond? (Section 8.9 describes mechanisms for coping in such cases.)
+## Exercise 1.11
+Try fetchall with longer argument lists, such as samples from the top million websites available at alexa.com. How does the program behave if a website just doesn’t respond? (Section 8.9 describes mechanisms for coping in such cases.)
 
 在fetchall中尝试使用长一些的参数列表，比如使用在alexa.com的上百万网站里排名靠前的。如果一个网站没有回应，程序将采取怎样的行为？（Section8.9 描述了在这种情况下的应对机制）。
+- [x] finish
 
-## Exercise 1.12 (P8)
+## Exercise 1.12
 Modify the Lissajous server to read parameter values from the URL. For example, you might arrange it so that a URL like http://localhost:8000/?cycles=20 sets the number of cycles to 20 instead of the default 5. Use the strconv.Atoi function to convert the string parameter into an integer. You can see its documentation with go doc strconv.Atoi.
 
 修改Lissajour服务，从URL读取变量，比如你可以访问 http://localhost:8000/?cycles=20 这个URL，这样访问可以将程序里的cycles默认的5修改为20。字符串转换为数字可以调用strconv.Atoi函数。你可以在godoc里查看strconv.Atoi的详细说明。
+- [x] finish
 
 # Chapter 2 Program Structure
 ## Exercise 2.1
@@ -116,7 +126,7 @@ Implement a full-color Mandelbrot set using the function image.NewRGBA and the t
 实现一个彩色的Mandelbrot图像，使用image.NewRGBA创建图像，使用color.RGBA或color.YCbCr生成颜色。
 
 ## Exercise 3.6
-Supersampling is a technique to reduce the effect of pixelation by computing the color value at several points within each pixel and taking the average. The simplest method is to divide each pixel into four ‘‘subpixels.’’ Implement it.
+Super-sampling is a technique to reduce the effect of pixelation by computing the color value at several points within each pixel and taking the average. The simplest method is to divide each pixel into four ‘‘subpixels.’’ Implement it.
 
 升采样技术可以降低每个像素对计算颜色值和平均值的影响。简单的方法是将每个像素分成四个子像素，实现它。
 
@@ -167,7 +177,7 @@ Write a program that prints the SHA256 hash of its standard input by default but
 编写一个程序，默认情况下打印标准输入的SHA256编码，并支持通过命令行flag定制，输出SHA384或SHA512哈希算法。
 
 ## Exercise 4.3
-Rewrite rverse to use an array pointer instead of a slice.
+Rewrite reverse to use an array pointer instead of a slice.
 
 重写reverse函数，使用数组指针代替slice。
 

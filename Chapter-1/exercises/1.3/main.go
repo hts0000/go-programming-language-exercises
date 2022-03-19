@@ -7,26 +7,22 @@ import (
 	"time"
 )
 
-func echo1(args []string) {
-	var (
-		s   string
-		sep string
-	)
+func echo1(args []string) (s string) {
+	var sep string
 	for i := 1; i < len(args); i++ {
 		s += sep + args[i]
 		sep = " "
 	}
+	return
 }
 
-func echo2(args []string) {
-	var (
-		s   string
-		sep string
-	)
+func echo2(args []string) (s string) {
+	var sep string
 	for _, arg := range args[1:] {
 		s += sep + arg
 		sep = " "
 	}
+	return
 }
 
 func echo3(args []string) (s string) {
